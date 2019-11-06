@@ -1,15 +1,24 @@
 from PIL import Image, ImageFont, ImageDraw
 import datetime
+import Matsedel
 
 week = ["MÅNDAG", "TISDAG", "ONSDAG", "TORSDAG", "FREDAG", "LÖRDAG", "SÖNDAG"]
 
 
 def DagensGastro():
-    return ["", "", "", ""]
+    mat = []
+    for x in Matsedel.GetMenu(datetime.datetime.today()).meals:
+        mat.append(x.name)
+    return mat
 
 today = datetime.datetime(1988,1,1)
 gastro = []
 dag = ""
+
+def CenteredText(draw, y, text, font):
+    w, h = draw.textsize(text, font=font)
+    draw.text(((1920-w)/2,y), text, font=font)
+
 
 def UpdateImage(temp, hum, raining):
     global today
@@ -20,10 +29,10 @@ def UpdateImage(temp, hum, raining):
 
     im = Image.open("bas.png")
     draw = ImageDraw.Draw(im)
-    font22 = ImageFont.truetype("Lato-Regular.ttf", 40)
-    font20 = ImageFont.truetype("Lato-Regular.ttf", 20)
-    font18 = ImageFont.truetype("Lato-Regular.ttf", 18)
-    font17 = ImageFont.truetype("Lato-Regular.ttf", 17)
+    font22 = ImageFont.truetype("Lato-Regular.ttf", 60)
+    font20 = ImageFont.truetype("Lato-Regular.ttf", 75)
+    font18 = ImageFont.truetype("Lato-Regular.ttf", 55)
+
 
     icon = "temp.png"
     if temp < 0:
@@ -37,11 +46,17 @@ def UpdateImage(temp, hum, raining):
             
     icon = Image.open(icon)
 
-    draw.text((250, 170), str(hum)+"%", font=font22)
-    draw.text((250, 250), str(temp)+"", font=font22)
+    x,y = icon.size
 
+    draw.text((250, 140), str(hum)+"%", font=font22)
+    draw.text((int(150+x/2)+65, 260), str(temp)+"°C", font=font22)
+    CenteredText(draw, 400, dag, font20)
 
-    im.paste(icon, (135, 250), icon)
+    for y, m in zip([700,775,850,925], gastro):
+        CenteredText(draw, y, m, font18)
+
+    im.paste(icon, (int(198-x/2), 240), icon)
     im.show()
+    im.save("image.png")
 
-UpdateImage(20,68, False)
+UpdateImage(-10, 68, True)
